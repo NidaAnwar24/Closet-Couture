@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% block title %}Wardrobe — Closet Couture{% endblock %}
+{% block head %}
+<style>
+.ward-header{padding:2rem 0 1.5rem;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.cat-section{margin-bottom:2.5rem}
+.drop-zone{border:2px dashed var(--border);border-radius:16px;padding:2rem;
+  text-align:center;cursor:pointer;transition:all .25s;background:var(--surface2)}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--a1);background:var(--cat-chip)}
+.drop-zone p{font-size:.88rem;color:var(--txt3);margin-top:.5rem}
+.upload-preview{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem}
+.up-thumb{width:70px;height:90px;object-fit:cover;border-radius:10px;border:1px solid var(--border)}
+/* delete btn on cards */
+.cloth-card .del-btn{position:absolute;top:6px;left:6px;width:26px;height:26px;
+  background:rgba(200,30,30,.85);color:#fff;border:none;border-radius:50%;
+  font-size:.8rem;cursor:pointer;display:none;align-items:center;justify-content:center;
+  transition:all .2s;z-index:2}
+.cloth-card:hover .del-btn{display:flex}
+.empty-cat{padding:1.5rem;text-align:center;color:var(--txt3);font-size:.85rem;
+  border:1.5px dashed var(--border);border-radius:14px}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="ward-header">
+    <div>
+      <h1 class="display">My Wardrobe</h1>
+      <p class="serif-italic">All your pieces, organised by category</p>
+    </div>
+    <button class="btn btn-primary" onclick="openUpload()">+ Upload Item</button>
+  </div>
+
+  {% for cat in categories %}
+  <div class="cat-section" id="{{ cat }}">
+    <div class="cat-header">
+      <h3>{{ cat }}</h3>
+      <span class="cat-count badge">{{ by_cat[cat]|length }} items</span>
+    </div>
+    {% if by_cat[cat] %}
+    <div class="clothes-grid" id="grid-{{ cat }}">
+      {% for item in by_cat[cat] %}
+      <div class="cloth-card" data-id="{{ item.id }}" data-cat="{{ item.category }}">
+        <button class="del-btn" onclick="delItem({{ item.id }}, this)" title="Remove">✕</button>
+        <div class="check">✓</div>
+        {% if item.image_path and item_img_url(item.image_path) %}
+          <img src="{{ item_img_url(item.image_path) }}" alt="{{ item.name }}">
+        {% else %}
+          <div class="no-img">{{ '👗' if cat=='Dresses' else '👔' if cat=='Tops' else '👖' if cat=='Bottoms' else '🧥' if cat=='Outerwear' else '👠' if cat=='Shoes' else '👜' if cat=='Bags' else '💍' if cat=='Accessories' else '🧺' }}</div>
+        {% endif %}
+        <div class="ci">
+          <div class="cn">{{ item.name }}</div>
+          <div class="cc">{{ item.color or cat }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-cat" id="grid-{{ cat }}">No {{ cat|lower }} yet — upload some!</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Upload Modal -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <h2 class="display-sm">Upload Item</h2>
+      <button onclick="closeUpload()" class="btn btn-ghost btn-sm">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Item Name</label>
+      <input type="text" id="uName" placeholder="e.g. White Linen Shirt">
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select id="uCat">
+        {% for cat in categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Color</label>
+      <input type="text" id="uColor" placeholder="e.g. Ivory, Navy, Blush">
+    </div>
+    <div class="form-group">
+      <label>Photo</label>
+      <div class="drop-zone" id="dropZone" onclick="qs('#uFile').click()">
+        <div style="font-size:2rem">📷</div>
+        <p>Click or drag &amp; drop a photo</p>
+        <div class="upload-preview" id="upPrev"></div>
+      </div>
+      <input type="file" id="uFile" accept="image/*" style="display:none" onchange="previewFile(this)">
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="uploadItem()" id="upBtn">
+      Add to Wardrobe
+    </button>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function openUpload(){qs('#uploadModal').classList.add('open')}
+function closeUpload(){qs('#uploadModal').classList.remove('open')}
+
+function previewFile(inp){
+  const prev=qs('#upPrev'); prev.innerHTML='';
+  if(inp.files[0]){
+    const img=document.createElement('img');
+    img.className='up-thumb';
+    img.src=URL.createObjectURL(inp.files[0]);
+    prev.appendChild(img);
+  }
+}
+
+// Drag & drop
+const dz=qs('#dropZone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f){qs('#uFile').files=e.dataTransfer.files; previewFile(qs('#uFile'))}
+});
+
+async function uploadItem(){
+  const name=qs('#uName').value.trim()||'My Item';
+  const cat=qs('#uCat').value;
+  const color=qs('#uColor').value.trim();
+  const file=qs('#uFile').files[0];
+
+  const fd=new FormData();
+  fd.append('name',name); fd.append('category',cat); fd.append('color',color);
+  if(file) fd.append('image',file);
+
+  const btn=qs('#upBtn');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Uploading…';
+
+  const r=await fetch('/upload-item',{method:'POST',body:fd});
+  const d=await r.json();
+  btn.disabled=false; btn.textContent='Add to Wardrobe';
+
+  if(d.success){
+    toast('✦ Added to wardrobe!','success');
+    closeUpload();
+    addCardToGrid(d, cat);
+    // reset
+    qs('#uName').value=''; qs('#uColor').value=''; qs('#uFile').value=''; qs('#upPrev').innerHTML='';
+  } else {
+    toast(d.error||'Upload failed','error');
+  }
+}
+
+function addCardToGrid(d, cat){
+  const grid=qs(`#grid-${cat}`);
+  // replace empty state if needed
+  if(grid.classList.contains('empty-cat')){
+    grid.className='clothes-grid'; grid.textContent='';
+  }
+  const icons={'Dresses':'👗','Tops':'👔','Bottoms':'👖','Outerwear':'🧥','Shoes':'👠','Bags':'👜','Accessories':'💍','Other':'🧺'};
+  const c=document.createElement('div');
+  c.className='cloth-card'; c.dataset.id=d.id; c.dataset.cat=cat;
+  c.innerHTML=`
+    <button class="del-btn" onclick="delItem(${d.id},this)" title="Remove">✕</button>
+    <div class="check">✓</div>
+    ${d.img_url ? `<img src="${d.img_url}" alt="${d.name}">` : `<div class="no-img">${icons[cat]||'🧺'}</div>`}
+    <div class="ci"><div class="cn">${d.name}</div><div class="cc">${d.color||cat}</div></div>`;
+  grid.prepend(c);
+  // update badge
+  const badge=qs(`#${cat} .badge`);
+  if(badge) badge.textContent=(parseInt(badge.textContent)||0)+1+' items';
+}
+
+async function delItem(id, btn){
+  if(!confirm('Remove this item?')) return;
+  const r=await fetch(`/delete-item/${id}`,{method:'DELETE'});
+  const d=await r.json();
+  if(d.success){
+    const card=btn.closest('.cloth-card');
+    const grid=card.parentElement;
+    const cat=card.dataset.cat;
+    card.remove();
+    const badge=qs(`#${cat} .badge`);
+    if(badge){const n=parseInt(badge.textContent)-1; badge.textContent=n+' items';}
+    if(!grid.querySelector('.cloth-card')){
+      grid.className='empty-cat'; grid.textContent=`No ${cat.toLowerCase()} yet — upload some!`;
+    }
+    toast('Item removed','');
+  }
+}
+</script>
+{% endblock %}

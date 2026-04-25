@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>{% block title %}Closet Couture{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,600;0,900;1,400&family=Cormorant:ital,wght@0,300;0,400;1,300&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ══ FEMALE THEME — Barbie × Popstar ══════════════════════════════════════ */
+body.theme-female {
+  --bg:       #FDF0F8;
+  --bg2:      #F7DCF0;
+  --surface:  rgba(255,255,255,0.88);
+  --surface2: rgba(255,215,240,0.55);
+  --a1:       #D91A8A;
+  --a2:       #9940C8;
+  --a3:       #FF6DB6;
+  --a4:       #C880F0;
+  --txt:      #280818;
+  --txt2:     #722050;
+  --txt3:     #B06090;
+  --border:   rgba(217,26,138,0.18);
+  --glow:     rgba(217,26,138,0.28);
+  --navbg:    rgba(253,240,248,0.94);
+  --shadow:   0 6px 28px rgba(217,26,138,0.13);
+  --grad:     linear-gradient(135deg,#D91A8A 0%,#9940C8 100%);
+  --gradsoft: linear-gradient(135deg,#F7B8DE 0%,#D8A0E8 50%,#B880F0 100%);
+  --cat-chip: rgba(217,26,138,0.10);
+}
+/* ══ MALE THEME — Old Money Blue ══════════════════════════════════════════ */
+body.theme-male {
+  --bg:       #EDF2F7;
+  --bg2:      #DDE6EF;
+  --surface:  rgba(255,255,255,0.92);
+  --surface2: rgba(210,225,240,0.55);
+  --a1:       #1F5280;
+  --a2:       #3B7099;
+  --a3:       #7AA4C0;
+  --a4:       #ADC8DF;
+  --txt:      #0A1825;
+  --txt2:     #1E3D58;
+  --txt3:     #4F789A;
+  --border:   rgba(31,82,128,0.18);
+  --glow:     rgba(31,82,128,0.20);
+  --navbg:    rgba(237,242,247,0.94);
+  --shadow:   0 6px 28px rgba(31,82,128,0.10);
+  --grad:     linear-gradient(135deg,#1F5280 0%,#0D2E4A 100%);
+  --gradsoft: linear-gradient(135deg,#C0D4E8 0%,#8AAAC8 50%,#5080A8 100%);
+  --cat-chip: rgba(31,82,128,0.09);
+}
+/* ══ DEFAULT ══════════════════════════════════════════════════════════════ */
+body {
+  --bg:#F5EFFF;--bg2:#EAE0FF;--surface:rgba(255,255,255,0.9);--surface2:rgba(220,210,255,0.5);
+  --a1:#6030B0;--a2:#9060D8;--a3:#C090F0;--a4:#E0C8FF;--txt:#1A0840;--txt2:#4A2890;
+  --txt3:#8060B8;--border:rgba(96,48,176,0.18);--glow:rgba(96,48,176,0.25);
+  --navbg:rgba(245,239,255,0.94);--shadow:0 6px 28px rgba(96,48,176,0.12);
+  --grad:linear-gradient(135deg,#6030B0,#3A1870);--gradsoft:linear-gradient(135deg,#C8B0F0,#A080D8,#7850C0);
+  --cat-chip:rgba(96,48,176,0.09);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse 55% 50% at 15% 15%,var(--bg2) 0%,transparent 65%),
+             radial-gradient(ellipse 45% 55% at 85% 85%,var(--bg2) 0%,transparent 65%);
+  pointer-events:none;z-index:0}
+
+/* ── NAV ─────────────────────────────────────────────────────────────────── */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;height:62px;
+  background:var(--navbg);backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 2rem}
+.nav-brand{font-family:'Bodoni Moda',serif;font-size:1.35rem;font-weight:900;
+  background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;text-decoration:none;letter-spacing:-0.01em}
+.nav-links{display:flex;gap:2px;align-items:center}
+.nav-links a{color:var(--txt2);text-decoration:none;font-size:.85rem;font-weight:500;
+  padding:.45rem .95rem;border-radius:50px;transition:all .2s;letter-spacing:.01em}
+.nav-links a:hover,.nav-links a.active{background:var(--surface2);color:var(--a1)}
+.nav-links .nav-cta{background:var(--grad);color:#fff !important;
+  -webkit-text-fill-color:#fff !important;box-shadow:0 3px 12px var(--glow)}
+.nav-links .nav-cta:hover{opacity:.9;transform:translateY(-1px)}
+
+/* ── PAGE ────────────────────────────────────────────────────────────────── */
+.page{padding-top:78px;min-height:100vh;position:relative;z-index:1}
+.container{max-width:1180px;margin:0 auto;padding:2rem}
+
+/* ── CARD ────────────────────────────────────────────────────────────────── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:2rem;box-shadow:var(--shadow);backdrop-filter:blur(10px)}
+
+/* ── BUTTONS ─────────────────────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:.45rem;padding:.7rem 1.6rem;
+  border-radius:50px;border:none;cursor:pointer;font-family:'Outfit',sans-serif;
+  font-size:.88rem;font-weight:600;transition:all .22s;text-decoration:none;letter-spacing:.01em}
+.btn-primary{background:var(--grad);color:#fff;box-shadow:0 4px 14px var(--glow)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 22px var(--glow)}
+.btn-secondary{background:var(--surface2);color:var(--a1);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--bg2)}
+.btn-ghost{background:transparent;color:var(--txt3);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface2)}
+.btn-sm{padding:.45rem 1.1rem;font-size:.8rem}
+.btn-danger{background:rgba(200,40,40,.08);color:#c02828;border:1px solid rgba(200,40,40,.2)}
+.btn-danger:hover{background:rgba(200,40,40,.15)}
+
+/* ── FORM ────────────────────────────────────────────────────────────────── */
+input,select,textarea{width:100%;padding:.72rem 1rem;border:1.5px solid var(--border);
+  border-radius:12px;background:var(--surface);color:var(--txt);
+  font-family:'Outfit',sans-serif;font-size:.92rem;outline:none;transition:all .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--a1);box-shadow:0 0 0 3px var(--glow)}
+label{display:block;font-size:.78rem;font-weight:600;color:var(--txt2);
+  margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.06em}
+.form-group{margin-bottom:1.15rem}
+
+/* ── TYPOGRAPHY ──────────────────────────────────────────────────────────── */
+.display{font-family:'Bodoni Moda',serif;font-size:2.6rem;font-weight:900;
+  line-height:1.1;color:var(--txt)}
+.display-sm{font-family:'Bodoni Moda',serif;font-size:1.8rem;font-weight:700;color:var(--txt)}
+.serif-italic{font-family:'Cormorant',serif;font-style:italic;color:var(--txt3);font-size:1.05rem}
+.badge{display:inline-block;padding:.22rem .7rem;border-radius:50px;font-size:.72rem;
+  font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  background:var(--cat-chip);color:var(--a1);border:1px solid var(--border)}
+
+/* ── CLOTHES GRID ────────────────────────────────────────────────────────── */
+.clothes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem}
+.cloth-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;
+  overflow:hidden;cursor:pointer;transition:all .28s;position:relative;user-select:none}
+.cloth-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--a1)}
+.cloth-card.selected{border-color:var(--a1);box-shadow:0 0 0 3px var(--glow)}
+.cloth-card .check{position:absolute;top:8px;right:8px;width:22px;height:22px;
+  background:var(--grad);border-radius:50%;display:none;align-items:center;justify-content:center;
+  color:#fff;font-size:.7rem;font-weight:700}
+.cloth-card.selected .check{display:flex}
+.cloth-card img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+.cloth-card .no-img{width:100%;aspect-ratio:3/4;background:var(--bg2);
+  display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:var(--txt3)}
+.cloth-card .ci{padding:.6rem .7rem}
+.cloth-card .ci .cn{font-size:.8rem;font-weight:600;color:var(--txt);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cloth-card .ci .cc{font-size:.7rem;color:var(--txt3);margin-top:.1rem}
+
+/* ── OUTFIT CANVAS ───────────────────────────────────────────────────────── */
+.outfit-preview{border-radius:20px;overflow:hidden;box-shadow:var(--shadow);
+  border:1px solid var(--border);background:white}
+.outfit-preview img{width:100%;display:block}
+
+/* ── TOAST ───────────────────────────────────────────────────────────────── */
+#toast{position:fixed;bottom:2rem;right:2rem;padding:.9rem 1.5rem;border-radius:14px;
+  font-size:.88rem;font-weight:500;z-index:9999;opacity:0;transform:translateY(16px);
+  transition:all .3s;background:var(--txt);color:#fff;pointer-events:none}
+#toast.show{opacity:1;transform:translateY(0)}
+#toast.success{background:linear-gradient(135deg,#1a9a50,#0d7040)}
+#toast.error{background:linear-gradient(135deg,#c02828,#901818)}
+
+/* ── SPINNER ─────────────────────────────────────────────────────────────── */
+.spinner{display:inline-block;width:18px;height:18px;border:2.5px solid var(--border);
+  border-top-color:var(--a1);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── MODAL ───────────────────────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);
+  z-index:2000;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--bg);border:1px solid var(--border);border-radius:24px;
+  padding:2.5rem;max-width:520px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.2);
+  max-height:90vh;overflow-y:auto;animation:modalIn .3s ease}
+@keyframes modalIn{from{opacity:0;transform:translateY(30px) scale(.97)} to{opacity:1;transform:none}}
+
+/* ── SECTION TABS ────────────────────────────────────────────────────────── */
+.tabs{display:flex;gap:.3rem;background:var(--surface2);border-radius:50px;
+  padding:.3rem;border:1px solid var(--border);width:fit-content}
+.tab{padding:.5rem 1.2rem;border-radius:50px;font-size:.83rem;font-weight:600;
+  cursor:pointer;transition:all .2s;color:var(--txt3);border:none;background:transparent}
+.tab.active{background:var(--grad);color:#fff;box-shadow:0 3px 10px var(--glow)}
+
+/* ── DIVIDER ─────────────────────────────────────────────────────────────── */
+.divider{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
+
+/* ── CAT HEADER ──────────────────────────────────────────────────────────── */
+.cat-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+.cat-header h3{font-family:'Bodoni Moda',serif;font-size:1.1rem;font-weight:700;color:var(--txt)}
+.cat-count{font-size:.78rem;color:var(--txt3)}
+
+@media(max-width:768px){
+  .container{padding:1rem}
+  .display{font-size:1.8rem}
+  nav{padding:0 1rem}
+  .nav-links a span{display:none}
+}
+</style>
+{% block head %}{% endblock %}
+</head>
+<body class="theme-{{ gender or '' }}">
+{% if session.get('user_id') %}
+<nav>
+  <a href="{{ url_for('dashboard') }}" class="nav-brand">✦ Closet Couture</a>
+  <div class="nav-links">
+    <a href="{{ url_for('dashboard') }}" {% if request.endpoint=='dashboard' %}class="active"{% endif %}><span>Home</span></a>
+    <a href="{{ url_for('wardrobe') }}" {% if request.endpoint=='wardrobe' %}class="active"{% endif %}><span>Wardrobe</span></a>
+    <a href="{{ url_for('builder') }}" {% if request.endpoint=='builder' %}class="active"{% endif %}><span>Build Outfit</span></a>
+    <a href="{{ url_for('couture_buddy') }}" {% if request.endpoint=='couture_buddy' %}class="active"{% endif %}><span>Couture Buddy ✦</span></a>
+    <a href="{{ url_for('outfits_gallery') }}" {% if request.endpoint=='outfits_gallery' %}class="active"{% endif %}><span>My Outfits</span></a>
+    <a href="{{ url_for('logout') }}" class="nav-cta btn">Logout</a>
+  </div>
+</nav>
+{% endif %}
+<div class="page">{% block content %}{% endblock %}</div>
+<div id="toast"></div>
+<script>
+function toast(msg,type='',dur=3200){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='show '+(type||'');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.className='',dur);
+}
+function qs(sel,ctx=document){return ctx.querySelector(sel)}
+function qsa(sel,ctx=document){return [...ctx.querySelectorAll(sel)]}
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

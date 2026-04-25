@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}My Outfits — Closet Couture{% endblock %}
+{% block head %}
+<style>
+.gallery-header{padding:2rem 0 1.5rem;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.filter-row{display:flex;gap:.5rem;margin-bottom:2rem;flex-wrap:wrap}
+.fbtn{padding:.4rem 1.1rem;border-radius:50px;font-size:.8rem;font-weight:600;cursor:pointer;
+  border:1.5px solid var(--border);background:var(--surface2);color:var(--txt3);transition:all .2s}
+.fbtn.active{background:var(--grad);color:#fff;border-color:transparent}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.5rem}
+.gcard{background:var(--surface);border:1px solid var(--border);border-radius:22px;
+  overflow:hidden;box-shadow:var(--shadow);transition:all .3s;position:relative}
+.gcard:hover{transform:translateY(-5px);box-shadow:0 16px 48px var(--glow)}
+.gcard img{width:100%;height:320px;object-fit:cover;display:block;cursor:zoom-in}
+.gcard .gm{padding:1.2rem}
+.gcard .gn{font-family:'Bodoni Moda',serif;font-size:1.1rem;font-weight:800;color:var(--txt)}
+.gcard .gd{font-size:.78rem;color:var(--txt3);margin-top:.2rem}
+.gcard .ai-pill{display:inline-flex;align-items:center;gap:.3rem;margin-top:.5rem;
+  padding:.2rem .65rem;border-radius:50px;font-size:.7rem;font-weight:700;
+  background:var(--grad);color:#fff}
+.gcard .del-card{position:absolute;top:10px;right:10px;width:30px;height:30px;
+  background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;
+  font-size:.8rem;cursor:pointer;display:none;align-items:center;justify-content:center;
+  transition:opacity .2s}
+.gcard:hover .del-card{display:flex}
+.gcard .inspo-txt{font-family:'Cormorant',serif;font-style:italic;font-size:.83rem;
+  color:var(--txt2);margin-top:.4rem;overflow:hidden;display:-webkit-box;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical}
+
+/* Lightbox */
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:3000;
+  display:none;align-items:center;justify-content:center;padding:2rem;cursor:pointer}
+.lb.open{display:flex}
+.lb img{max-width:90vw;max-height:88vh;object-fit:contain;border-radius:16px}
+.lb-close{position:absolute;top:1.5rem;right:1.5rem;background:rgba(255,255,255,.12);
+  color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:1.3rem;
+  cursor:pointer;display:flex;align-items:center;justify-content:center}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="gallery-header">
+    <div>
+      <h1 class="display">My Outfits</h1>
+      <p class="serif-italic">{{ outfits|length }} outfit{{ 's' if outfits|length != 1 }} in your collection</p>
+    </div>
+    <div style="display:flex;gap:.7rem;flex-wrap:wrap">
+      <a href="{{ url_for('builder') }}" class="btn btn-secondary">Build Outfit</a>
+      <a href="{{ url_for('couture_buddy') }}" class="btn btn-primary">✦ Couture Buddy</a>
+    </div>
+  </div>
+
+  {% if outfits %}
+  <div class="filter-row">
+    <button class="fbtn active" onclick="filter('all',this)">All ({{ outfits|length }})</button>
+    <button class="fbtn" onclick="filter('manual',this)">My Builds</button>
+    <button class="fbtn" onclick="filter('ai',this)">✦ Couture Buddy</button>
+  </div>
+
+  <div class="gallery-grid" id="gallery">
+    {% for o in outfits %}
+    <div class="gcard" id="gcard-{{ o.id }}" data-type="{{ 'ai' if o.ai_generated else 'manual' }}">
+      <button class="del-card" onclick="delOutfit({{ o.id }})" title="Delete">✕</button>
+      {% if o.canvas_path %}
+      <img src="{{ url_for('static', filename='uploads/'+o.canvas_path) }}"
+           alt="{{ o.name }}" onclick="openLb(this.src)">
+      {% else %}
+      <div style="height:320px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:4rem">👗</div>
+      {% endif %}
+      <div class="gm">
+        <div class="gn">{{ o.name }}</div>
+        <div class="gd">{{ o.created_at.strftime('%b %d, %Y') }}</div>
+        {% if o.ai_generated %}
+          <div class="ai-pill">✦ Couture Buddy</div>
+          {% if o.inspo_text %}<div class="inspo-txt">"{{ o.inspo_text }}"</div>{% endif %}
+        {% endif %}
+        {% if o.canvas_path %}
+        <a href="{{ url_for('static', filename='uploads/'+o.canvas_path) }}"
+           download="{{ o.name }}.png"
+           class="btn btn-ghost btn-sm" style="margin-top:.7rem">⬇ Download</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="card" style="text-align:center;padding:5rem 2rem">
+    <div style="font-size:4rem;margin-bottom:1rem">🪞</div>
+    <p class="display-sm" style="margin-bottom:.5rem">No outfits yet</p>
+    <p class="serif-italic" style="margin-bottom:2rem">Build your first look or let Couture Buddy style you</p>
+    <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap">
+      <a href="{{ url_for('builder') }}" class="btn btn-primary">Build Outfit</a>
+      <a href="{{ url_for('couture_buddy') }}" class="btn btn-secondary">✦ Couture Buddy</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Lightbox -->
+<div class="lb" id="lb" onclick="closeLb()">
+  <button class="lb-close" onclick="closeLb()">✕</button>
+  <img id="lbImg" src="" alt="">
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function filter(type, btn){
+  qsa('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  qsa('.gcard').forEach(c=>{
+    c.style.display=(type==='all'||c.dataset.type===type)?'':'none';
+  });
+}
+async function delOutfit(id){
+  if(!confirm('Delete this outfit?')) return;
+  const r=await fetch(`/delete-outfit/${id}`,{method:'DELETE'});
+  const d=await r.json();
+  if(d.success){ qs(`#gcard-${id}`).remove(); toast('Outfit removed',''); }
+}
+function openLb(src){ qs('#lbImg').src=src; qs('#lb').classList.add('open'); }
+function closeLb(){ qs('#lb').classList.remove('open'); }
+</script>
+{% endblock %}

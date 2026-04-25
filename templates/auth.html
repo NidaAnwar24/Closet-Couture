@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Join' if mode=='register' else 'Sign In' }} — Closet Couture{% endblock %}
+{% block head %}
+<style>
+.auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+.auth-box{background:var(--surface);border:1px solid var(--border);border-radius:28px;
+  padding:3rem 2.5rem;width:100%;max-width:440px;
+  box-shadow:var(--shadow);backdrop-filter:blur(20px);
+  animation:authIn .5s ease}
+@keyframes authIn{from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none}}
+.auth-logo{font-family:'Bodoni Moda',serif;font-size:1.25rem;font-weight:900;
+  background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;text-align:center;display:block;text-decoration:none;margin-bottom:2.2rem}
+.auth-title{font-family:'Bodoni Moda',serif;font-size:2rem;font-weight:800;margin-bottom:.2rem}
+.auth-sub{font-family:'Cormorant',serif;font-style:italic;color:var(--txt3);margin-bottom:2rem;font-size:1rem}
+.error{background:rgba(200,30,30,.08);color:#b82020;border:1px solid rgba(200,30,30,.2);
+  border-radius:10px;padding:.7rem 1rem;font-size:.85rem;margin-bottom:1rem}
+.auth-foot{text-align:center;margin-top:1.4rem;font-size:.85rem;color:var(--txt3)}
+.auth-foot a{color:var(--a1);text-decoration:none;font-weight:600}
+</style>
+{% endblock %}
+{% block content %}
+<div class="auth-page">
+  <div class="auth-box">
+    <a href="/landing" class="auth-logo">✦ Closet Couture</a>
+    {% if mode=='register' %}
+      <h1 class="auth-title">Create Account</h1>
+      <p class="auth-sub">Your style journey starts now</p>
+    {% else %}
+      <h1 class="auth-title">Welcome back</h1>
+      <p class="auth-sub">Your wardrobe is waiting</p>
+    {% endif %}
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+    <form method="POST">
+      {% if mode=='register' %}
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" placeholder="stylequeen_99" required>
+      </div>
+      {% endif %}
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" placeholder="you@email.com" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.9rem">
+        {{ 'Create My Closet →' if mode=='register' else 'Sign In →' }}
+      </button>
+    </form>
+    <div class="auth-foot">
+      {% if mode=='register' %}Already have an account? <a href="/login">Sign in</a>
+      {% else %}New here? <a href="/register">Create account</a>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

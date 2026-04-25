@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% block title %}Couture Buddy — Closet Couture{% endblock %}
+{% block head %}
+<style>
+.buddy-layout{display:grid;grid-template-columns:460px 1fr;gap:2rem;align-items:start;padding:2rem 0}
+.buddy-panel{position:sticky;top:80px}
+.buddy-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;
+  padding:2rem;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.buddy-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:var(--grad)}
+.inspo-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.6rem;margin-bottom:1rem}
+.itag{padding:.3rem .8rem;border-radius:50px;font-size:.78rem;cursor:pointer;
+  background:var(--cat-chip);color:var(--a1);border:1px solid var(--border);transition:all .2s}
+.itag:hover{background:var(--surface2)}
+
+/* Result section */
+.result-area{min-height:200px}
+.result-outfit{background:var(--surface);border:1px solid var(--border);border-radius:24px;
+  overflow:hidden;box-shadow:var(--shadow);margin-bottom:1.5rem;
+  animation:slideIn .4s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)}}
+.result-img img{width:100%;display:block;max-height:600px;object-fit:contain;background:white}
+.result-meta{padding:1.5rem}
+.result-name{font-family:'Bodoni Moda',serif;font-size:1.4rem;font-weight:800;margin-bottom:.4rem}
+.result-note{font-family:'Cormorant',serif;font-style:italic;color:var(--txt2);
+  font-size:1rem;line-height:1.55;margin-bottom:1rem}
+.pieces-used{display:flex;flex-wrap:wrap;gap:.4rem}
+.piece-chip{padding:.25rem .7rem;border-radius:50px;font-size:.75rem;font-weight:600;
+  background:var(--cat-chip);color:var(--a1);border:1px solid var(--border)}
+
+/* AI history */
+.ai-history{margin-top:2rem}
+.hist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem}
+.hist-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  overflow:hidden;transition:all .28s;cursor:pointer;position:relative}
+.hist-card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.hist-card img{width:100%;height:220px;object-fit:cover}
+.hist-card .hm{padding:.9rem}
+.hist-card .hn{font-size:.85rem;font-weight:700;color:var(--txt)}
+.hist-card .hi{font-family:'Cormorant',serif;font-style:italic;font-size:.8rem;color:var(--txt3);margin-top:.2rem;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-del{position:absolute;top:8px;right:8px;width:26px;height:26px;
+  background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;
+  font-size:.75rem;cursor:pointer;display:none;align-items:center;justify-content:center}
+.hist-card:hover .hist-del{display:flex}
+
+/* Loading state */
+.loading-state{text-align:center;padding:4rem 2rem;color:var(--txt3)}
+.loading-state .li{font-size:3rem;margin-bottom:1rem;animation:pulse 1.5s ease infinite}
+@keyframes pulse{0%,100%{opacity:.5} 50%{opacity:1}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div style="padding:2rem 0 .5rem">
+    <div class="badge" style="margin-bottom:.75rem">AI Stylist</div>
+    <h1 class="display">Couture Buddy <span style="font-size:1.8rem">✦</span></h1>
+    <p class="serif-italic">Describe your vibe — I'll build you an outfit from your wardrobe</p>
+  </div>
+
+  {% if not clothes %}
+  <div class="card" style="margin-top:2rem;text-align:center;padding:4rem">
+    <div style="font-size:3.5rem;margin-bottom:1rem">🪄</div>
+    <p class="display-sm" style="margin-bottom:.5rem">Wardrobe is empty</p>
+    <p class="serif-italic" style="margin-bottom:1.5rem">Couture Buddy needs clothes to work with!</p>
+    <a href="{{ url_for('wardrobe') }}" class="btn btn-primary">Upload Clothes →</a>
+  </div>
+  {% else %}
+  <div class="buddy-layout">
+    <!-- INPUT PANEL -->
+    <div class="buddy-panel">
+      <div class="buddy-card">
+        <h3 class="display-sm" style="margin-bottom:.25rem">What's your inspo?</h3>
+        <p style="font-size:.85rem;color:var(--txt3);margin-bottom:1.2rem">Describe a vibe, reference, occasion, or aesthetic</p>
+
+        <div class="form-group">
+          <label>Your Inspiration</label>
+          <textarea id="inspoText" rows="4" 
+            placeholder="e.g. 'Quiet luxury dinner date', 'Y2K festival weekend', 'Corporate old money meeting', 'Cottagecore Sunday walk'…"
+            style="resize:vertical"></textarea>
+        </div>
+
+        <!-- Quick inspo tags -->
+        <div class="inspo-tags" id="inpsoTags">
+          {% if gender == 'female' %}
+          <span class="itag" onclick="setInspo('Quiet luxury dinner date')">Quiet luxury dinner</span>
+          <span class="itag" onclick="setInspo('Y2K inspired festival look')">Y2K festival</span>
+          <span class="itag" onclick="setInspo('Barbiecore brunch')">Barbiecore brunch</span>
+          <span class="itag" onclick="setInspo('Coquette aesthetic day out')">Coquette day out</span>
+          <span class="itag" onclick="setInspo('Clean girl office look')">Clean girl office</span>
+          <span class="itag" onclick="setInspo('Cottagecore weekend')">Cottagecore weekend</span>
+          {% else %}
+          <span class="itag" onclick="setInspo('Old money casual weekend')">Old money weekend</span>
+          <span class="itag" onclick="setInspo('Business formal power meeting')">Power meeting</span>
+          <span class="itag" onclick="setInspo('Smart casual dinner date')">Smart casual date</span>
+          <span class="itag" onclick="setInspo('Streetwear editorial shoot')">Streetwear editorial</span>
+          <span class="itag" onclick="setInspo('Classic Ivy League campus look')">Ivy League campus</span>
+          <span class="itag" onclick="setInspo('Coastal grandfather weekend')">Coastal grandfather</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>Occasion (optional)</label>
+          <input type="text" id="occasion" placeholder="e.g. Wedding, Work, Night out, Gym">
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:.9rem"
+                id="buddyBtn" onclick="runBuddy()">
+          ✦ Style Me
+        </button>
+      </div>
+
+      <!-- Wardrobe summary -->
+      <div class="card" style="margin-top:1rem;padding:1.25rem">
+        <p style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:.75rem">Your Wardrobe</p>
+        <div style="display:flex;flex-wrap:wrap;gap:.4rem">
+          {% set counts = {} %}
+          {% for c in clothes %}{% set _ = counts.update({c.category: (counts.get(c.category,0)+1)}) %}{% endfor %}
+          {% for cat,n in counts.items() %}
+          <span class="badge">{{ cat }} {{ n }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULT AREA -->
+    <div>
+      <div class="result-area" id="resultArea">
+        <div class="loading-state" id="loadingState" style="display:none">
+          <div class="li">✦</div>
+          <p class="display-sm" style="margin-bottom:.4rem">Styling you…</p>
+          <p class="serif-italic">Couture Buddy is picking your perfect outfit</p>
+        </div>
+        <div id="resultBox"></div>
+      </div>
+
+      {% if outfits %}
+      <div class="ai-history">
+        <h3 class="display-sm" style="margin-bottom:1.25rem">Previous AI Outfits</h3>
+        <div class="hist-grid" id="histGrid">
+          {% for o in outfits %}
+          <div class="hist-card" id="hc-{{ o.id }}">
+            <button class="hist-del" onclick="delHistOutfit({{ o.id }})" title="Delete">✕</button>
+            {% if o.canvas_path %}
+            <img src="{{ url_for('static', filename='uploads/'+o.canvas_path) }}" alt="{{ o.name }}">
+            {% endif %}
+            <div class="hm">
+              <div class="hn">{{ o.name }}</div>
+              <div class="hi">{{ o.inspo_text or '' }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function setInspo(txt){ qs('#inspoText').value=txt; qs('#inspoText').focus(); }
+
+async function runBuddy(){
+  const inspo=qs('#inspoText').value.trim();
+  const occasion=qs('#occasion').value.trim();
+  if(!inspo){ toast('Describe your inspo first!','error'); return; }
+
+  const btn=qs('#buddyBtn');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Styling…';
+  qs('#loadingState').style.display='block';
+  qs('#resultBox').innerHTML='';
+
+  const r=await fetch('/ai-create-outfit',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({inspo,occasion})
+  });
+  const d=await r.json();
+  btn.disabled=false; btn.innerHTML='✦ Style Me';
+  qs('#loadingState').style.display='none';
+
+  if(d.success){
+    const pieces=d.items.map(i=>`<span class="piece-chip">${i.name} <small style="opacity:.6">${i.category}</small></span>`).join('');
+    qs('#resultBox').innerHTML=`
+      <div class="result-outfit">
+        <div class="result-img"><img src="${d.canvas_url}?t=${Date.now()}" alt="${d.outfit_name}"></div>
+        <div class="result-meta">
+          <div class="result-name">${d.outfit_name}</div>
+          ${d.style_note ? `<div class="result-note">"${d.style_note}"</div>` : ''}
+          <div class="pieces-used">${pieces}</div>
+          <div style="display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap">
+            <a href="${d.canvas_url}" download="${d.outfit_name}.png" class="btn btn-secondary btn-sm">⬇ Download</a>
+            <a href="{{ url_for('outfits_gallery') }}" class="btn btn-ghost btn-sm">View All Outfits →</a>
+          </div>
+        </div>
+      </div>`;
+
+    // prepend to history
+    const grid=qs('#histGrid');
+    if(grid){
+      const hc=document.createElement('div');
+      hc.className='hist-card'; hc.id=`hc-${d.outfit_id}`;
+      hc.innerHTML=`
+        <button class="hist-del" onclick="delHistOutfit(${d.outfit_id})" title="Delete">✕</button>
+        <img src="${d.canvas_url}?t=${Date.now()}" alt="${d.outfit_name}">
+        <div class="hm"><div class="hn">${d.outfit_name}</div><div class="hi">${qs('#inspoText').value}</div></div>`;
+      grid.prepend(hc);
+    }
+    toast('✦ Outfit created!','success');
+  } else {
+    qs('#resultBox').innerHTML=`<div class="card" style="text-align:center;padding:2.5rem;color:var(--txt3)">${d.error}</div>`;
+    toast(d.error||'Error','error');
+  }
+}
+
+async function delHistOutfit(id){
+  const r=await fetch(`/delete-outfit/${id}`,{method:'DELETE'});
+  const d=await r.json();
+  if(d.success){ qs(`#hc-${id}`).remove(); toast('Removed',''); }
+}
+</script>
+{% endblock %}

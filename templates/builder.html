@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% block title %}Build Outfit — Closet Couture{% endblock %}
+{% block head %}
+<style>
+.builder-layout{display:grid;grid-template-columns:1fr 360px;gap:2rem;align-items:start;padding:2rem 0}
+.picker-area{}
+.preview-panel{position:sticky;top:80px}
+.cat-tabs{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.ctab{padding:.45rem 1rem;border-radius:50px;font-size:.8rem;font-weight:600;cursor:pointer;
+  border:1.5px solid var(--border);background:var(--surface2);color:var(--txt3);transition:all .2s}
+.ctab.active,.ctab:hover{background:var(--grad);color:#fff;border-color:transparent;
+  box-shadow:0 3px 10px var(--glow)}
+.cat-panel{display:none}.cat-panel.active{display:block}
+.selected-strip{display:flex;gap:.6rem;flex-wrap:wrap;min-height:60px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:14px;
+  padding:.75rem;margin-bottom:1rem;align-items:center}
+.sel-chip{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .8rem;
+  background:var(--surface);border:1px solid var(--border);border-radius:50px;
+  font-size:.78rem;font-weight:600;color:var(--txt2)}
+.sel-chip button{background:none;border:none;color:var(--txt3);cursor:pointer;
+  font-size:.85rem;padding:0;line-height:1}
+.canvas-box{background:white;border:1px solid var(--border);border-radius:20px;
+  overflow:hidden;box-shadow:var(--shadow);min-height:340px;
+  display:flex;align-items:center;justify-content:center}
+.canvas-box img{width:100%;display:block}
+.canvas-placeholder{text-align:center;padding:3rem;color:var(--txt3)}
+.canvas-placeholder .pi{font-size:3rem;margin-bottom:.75rem}
+.save-section{margin-top:1.2rem}
+.empty-cat-msg{text-align:center;padding:2rem;color:var(--txt3);font-size:.88rem;
+  border:1.5px dashed var(--border);border-radius:14px}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div style="padding:2rem 0 .5rem">
+    <h1 class="display">Build Outfit</h1>
+    <p class="serif-italic">Pick pieces from each category to compose your look</p>
+  </div>
+
+  <div class="builder-layout">
+    <!-- LEFT: item picker -->
+    <div class="picker-area">
+      <!-- Selected items strip -->
+      <div style="margin-bottom:1rem">
+        <label style="margin-bottom:.5rem">Selected pieces</label>
+        <div class="selected-strip" id="selStrip">
+          <span style="font-size:.82rem;color:var(--txt3)">Nothing selected yet…</span>
+        </div>
+      </div>
+
+      <!-- Category tabs -->
+      <div class="cat-tabs" id="catTabs">
+        {% for cat in categories %}
+          {% if by_cat[cat] %}
+          <div class="ctab {% if loop.first %}active{% endif %}" data-cat="{{ cat }}" onclick="switchCat('{{ cat }}')">
+            {{ cat }} <span style="opacity:.6">({{ by_cat[cat]|length }})</span>
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- Per-category grids -->
+      {% for cat in categories %}
+      <div class="cat-panel {% if loop.first and by_cat[cat] %}active{% endif %}" id="panel-{{ cat }}">
+        {% if by_cat[cat] %}
+        <div class="clothes-grid">
+          {% for item in by_cat[cat] %}
+          <div class="cloth-card" data-id="{{ item.id }}" data-cat="{{ item.category }}" data-name="{{ item.name }}"
+               onclick="toggleItem(this)">
+            <div class="check">✓</div>
+            {% if item.image_path and item_img_url(item.image_path) %}
+              <img src="{{ item_img_url(item.image_path) }}" alt="{{ item.name }}" loading="lazy">
+            {% else %}
+              <div class="no-img">{{ '👗' if cat=='Dresses' else '👔' if cat=='Tops' else '👖' if cat=='Bottoms' else '🧥' if cat=='Outerwear' else '👠' if cat=='Shoes' else '👜' if cat=='Bags' else '💍' if cat=='Accessories' else '🧺' }}</div>
+            {% endif %}
+            <div class="ci">
+              <div class="cn">{{ item.name }}</div>
+              <div class="cc">{{ item.color or cat }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-cat-msg">No {{ cat|lower }} in your wardrobe</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      {% if not clothes %}
+      <div class="card" style="margin-top:2rem;text-align:center;padding:3rem">
+        <div style="font-size:3rem;margin-bottom:1rem">🗂️</div>
+        <p class="display-sm" style="margin-bottom:.5rem">Wardrobe is empty</p>
+        <p class="serif-italic" style="margin-bottom:1.5rem">Add some clothes before building an outfit</p>
+        <a href="{{ url_for('wardrobe') }}" class="btn btn-primary">Upload Clothes →</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- RIGHT: preview + save -->
+    <div class="preview-panel">
+      <div class="card">
+        <h3 class="display-sm" style="margin-bottom:1rem">Outfit Preview</h3>
+        <div class="canvas-box" id="canvasBox">
+          <div class="canvas-placeholder">
+            <div class="pi">👗</div>
+            <p style="font-size:.85rem">Select items to see your outfit</p>
+          </div>
+        </div>
+
+        <div class="save-section">
+          <div class="form-group">
+            <label>Outfit Name</label>
+            <input type="text" id="outfitName" placeholder="e.g. Sunday Brunch Look">
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center" 
+                  id="saveBtn" onclick="saveOutfit()">
+            Save Outfit
+          </button>
+          <a href="{{ url_for('couture_buddy') }}" class="btn btn-secondary" 
+             style="width:100%;justify-content:center;margin-top:.6rem">
+            ✦ Let AI Style Me
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const selected = new Map(); // id -> {name, cat}
+
+function switchCat(cat){
+  qsa('.ctab').forEach(t=>t.classList.remove('active'));
+  qsa('.cat-panel').forEach(p=>p.classList.remove('active'));
+  qs(`.ctab[data-cat="${cat}"]`).classList.add('active');
+  const panel=qs(`#panel-${cat}`);
+  if(panel) panel.classList.add('active');
+}
+
+function toggleItem(card){
+  const id=card.dataset.id, name=card.dataset.name, cat=card.dataset.cat;
+  if(selected.has(id)){
+    selected.delete(id); card.classList.remove('selected');
+  } else {
+    selected.set(id,{name,cat}); card.classList.add('selected');
+  }
+  renderStrip();
+}
+
+function deselect(id){
+  selected.delete(id);
+  const card=qs(`.cloth-card[data-id="${id}"]`);
+  if(card) card.classList.remove('selected');
+  renderStrip();
+}
+
+function renderStrip(){
+  const strip=qs('#selStrip');
+  if(!selected.size){
+    strip.innerHTML='<span style="font-size:.82rem;color:var(--txt3)">Nothing selected yet…</span>';
+    return;
+  }
+  strip.innerHTML=[...selected.entries()].map(([id,{name}])=>
+    `<span class="sel-chip">${name}<button onclick="deselect('${id}')">✕</button></span>`
+  ).join('');
+}
+
+async function saveOutfit(){
+  if(!selected.size){toast('Select at least one item','error');return;}
+  const name=(qs('#outfitName').value.trim())||'My Outfit';
+  const btn=qs('#saveBtn');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Generating…';
+
+  const r=await fetch('/save-outfit',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name, items:[...selected.keys()]})
+  });
+  const d=await r.json();
+  btn.disabled=false; btn.textContent='Save Outfit';
+
+  if(d.success){
+    const box=qs('#canvasBox');
+    box.innerHTML=`<img src="${d.canvas_url}?t=${Date.now()}" alt="${name}" style="border-radius:20px">`;
+    toast('✦ Outfit saved!','success');
+    // show download link
+    const dl=document.createElement('a');
+    dl.href=d.canvas_url; dl.download=name+'.png';
+    dl.className='btn btn-ghost btn-sm';
+    dl.style.cssText='width:100%;justify-content:center;margin-top:.5rem';
+    dl.textContent='⬇ Download Outfit Image';
+    qs('.save-section').appendChild(dl);
+  } else {
+    toast(d.error||'Save failed','error');
+  }
+}
+</script>
+{% endblock %}

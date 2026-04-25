@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Style Profile — Closet Couture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,900;1,400&family=Cormorant:ital,wght@0,300;1,300&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#080510;color:#F2EBF8;font-family:'Outfit',sans-serif;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:2rem;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse 60% 55% at 25% 50%,rgba(220,40,150,.18) 0%,transparent 55%),
+             radial-gradient(ellipse 60% 55% at 75% 50%,rgba(30,80,140,.18) 0%,transparent 55%)}
+.wrap{position:relative;z-index:1;text-align:center;max-width:800px;width:100%;
+  animation:fadeUp .6s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:none}}
+.logo{font-family:'Bodoni Moda',serif;font-size:1.2rem;font-weight:900;
+  background:linear-gradient(135deg,#E880C8,#9040D8);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:2.5rem;display:block;text-decoration:none}
+h1{font-family:'Bodoni Moda',serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:900;margin-bottom:.4rem}
+.sub{font-family:'Cormorant',serif;font-style:italic;color:rgba(240,230,255,.6);
+  font-size:1.1rem;margin-bottom:3rem}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+
+.card{padding:2.8rem 2rem;border-radius:28px;cursor:pointer;transition:all .35s;
+  border:2px solid transparent;position:relative;overflow:hidden;text-align:center}
+.card::before{content:'';position:absolute;inset:0;transition:opacity .3s}
+.card:hover{transform:translateY(-8px) scale(1.01)}
+
+/* FEMALE */
+.f-card{background:linear-gradient(160deg,rgba(255,180,220,.06),rgba(180,80,220,.06));
+  border-color:rgba(220,40,150,.3)}
+.f-card::before{background:linear-gradient(135deg,rgba(255,105,180,.15),rgba(155,70,200,.15))}
+.f-card:hover{border-color:#D91A8A;box-shadow:0 24px 60px rgba(220,40,150,.28)}
+
+/* MALE */
+.m-card{background:linear-gradient(160deg,rgba(80,130,180,.06),rgba(30,60,110,.06));
+  border-color:rgba(30,80,140,.3)}
+.m-card::before{background:linear-gradient(135deg,rgba(70,120,180,.15),rgba(20,50,90,.15))}
+.m-card:hover{border-color:#1F5280;box-shadow:0 24px 60px rgba(30,80,140,.28)}
+
+.card-inner{position:relative;z-index:1}
+.card-icon{font-size:4rem;margin-bottom:1.2rem;display:block;
+  animation:float 3s ease-in-out infinite alternate}
+@keyframes float{from{transform:translateY(0)} to{transform:translateY(-8px)}}
+.f-card .card-icon{animation-delay:0s}
+.m-card .card-icon{animation-delay:-.5s}
+
+.card-title{font-family:'Bodoni Moda',serif;font-size:1.6rem;font-weight:800;margin-bottom:.6rem}
+.f-card .card-title{color:#F0A0DA}
+.m-card .card-title{color:#90B8D8}
+
+.card-desc{font-size:.85rem;color:rgba(240,230,255,.5);line-height:1.5;margin-bottom:1.2rem}
+
+.swatches{display:flex;gap:.35rem;justify-content:center;margin-bottom:.6rem}
+.sw{width:16px;height:16px;border-radius:50%;border:1px solid rgba(255,255,255,.15)}
+.tag{font-size:.72rem;color:rgba(240,230,255,.35);font-family:'Cormorant',serif;
+  font-style:italic;letter-spacing:.05em}
+
+@media(max-width:520px){.choices{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/landing" class="logo">✦ Closet Couture</a>
+  <h1>Hello, {{ username }}! 👋</h1>
+  <p class="sub">How would you like your closet styled?</p>
+  <form method="POST" id="gf">
+    <input type="radio" name="gender" id="rF" value="female" style="display:none">
+    <input type="radio" name="gender" id="rM" value="male"   style="display:none">
+    <div class="choices">
+      <div class="card f-card" onclick="pick('female')">
+        <div class="card-inner">
+          <span class="card-icon">💖</span>
+          <div class="card-title">Feminine</div>
+          <div class="card-desc">Barbie-inspired pinks, lilacs &amp; popstar glam energy</div>
+          <div class="swatches">
+            <div class="sw" style="background:#FF69B4"></div>
+            <div class="sw" style="background:#E91E8C"></div>
+            <div class="sw" style="background:#9B40C8"></div>
+            <div class="sw" style="background:#C880F0"></div>
+            <div class="sw" style="background:#FFB6D9"></div>
+          </div>
+          <div class="tag">✦ Barbie × Popstar ✦</div>
+        </div>
+      </div>
+      <div class="card m-card" onclick="pick('male')">
+        <div class="card-inner">
+          <span class="card-icon">🫐</span>
+          <div class="card-title">Masculine</div>
+          <div class="card-desc">Blue-grey old money aesthetics — refined, minimal, elevated</div>
+          <div class="swatches">
+            <div class="sw" style="background:#EDF2F7"></div>
+            <div class="sw" style="background:#8AAFC8"></div>
+            <div class="sw" style="background:#3B7099"></div>
+            <div class="sw" style="background:#1F5280"></div>
+            <div class="sw" style="background:#0D2E4A"></div>
+          </div>
+          <div class="tag">◆ Old Money Aesthetic ◆</div>
+        </div>
+      </div>
+    </div>
+    <button type="submit" id="sb" style="display:none"></button>
+  </form>
+</div>
+<script>
+function pick(g){
+  document.getElementById(g==='female'?'rF':'rM').checked=true;
+  document.getElementById('sb').click();
+}
+</script>
+</body>
+</html>

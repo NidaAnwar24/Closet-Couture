@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — Closet Couture{% endblock %}
+{% block head %}
+<style>
+.dash-hero{padding:2.5rem 0 1.5rem;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.stat-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem;margin-bottom:2rem}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  padding:1.2rem 1.4rem;box-shadow:var(--shadow)}
+.stat .n{font-family:'Bodoni Moda',serif;font-size:2rem;font-weight:900;
+  background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat .l{font-size:.78rem;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-top:.1rem}
+.outfits-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.25rem}
+.outfit-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  overflow:hidden;transition:all .28s;cursor:pointer}
+.outfit-card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.outfit-card img{width:100%;height:240px;object-fit:cover;display:block}
+.outfit-card .oi{padding:1rem}
+.outfit-card .on{font-weight:600;font-size:.9rem;color:var(--txt)}
+.outfit-card .od{font-size:.78rem;color:var(--txt3);margin-top:.2rem}
+.outfit-card .ai-badge{display:inline-flex;align-items:center;gap:.3rem;
+  margin-top:.4rem;padding:.2rem .6rem;border-radius:50px;font-size:.7rem;font-weight:700;
+  background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff}
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--txt3)}
+.empty-state .ei{font-size:4rem;margin-bottom:1rem}
+.quick-cats{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:2rem}
+.qcat{padding:.4rem 1rem;border-radius:50px;font-size:.8rem;font-weight:600;
+  background:var(--cat-chip);color:var(--a1);border:1px solid var(--border);
+  text-decoration:none;transition:all .2s}
+.qcat:hover{background:var(--surface2)}
+.qcat .cnt{margin-left:.3rem;opacity:.7}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="dash-hero">
+    <div>
+      <p class="serif-italic">Good to see you,</p>
+      <h1 class="display">{{ user.username }}</h1>
+    </div>
+    <div style="display:flex;gap:.7rem;flex-wrap:wrap">
+      <a href="{{ url_for('wardrobe') }}" class="btn btn-secondary">Add Clothes</a>
+      <a href="{{ url_for('builder') }}" class="btn btn-primary">Build Outfit</a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stat-row">
+    <div class="stat"><div class="n">{{ clothes|length }}</div><div class="l">Clothes</div></div>
+    <div class="stat"><div class="n">{{ outfits|length }}</div><div class="l">Outfits</div></div>
+    {% for cat in categories if counts[cat] > 0 %}
+    <div class="stat"><div class="n">{{ counts[cat] }}</div><div class="l">{{ cat }}</div></div>
+    {% endfor %}
+  </div>
+
+  <!-- Quick wardrobe nav -->
+  {% if clothes %}
+  <div class="quick-cats">
+    {% for cat in categories if counts[cat] > 0 %}
+    <a href="{{ url_for('wardrobe') }}#{{ cat }}" class="qcat">
+      {{ cat }}<span class="cnt">{{ counts[cat] }}</span>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Recent outfits -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+    <h2 class="display-sm">Recent Outfits</h2>
+    <a href="{{ url_for('outfits_gallery') }}" class="btn btn-ghost btn-sm">View All →</a>
+  </div>
+
+  {% if outfits %}
+  <div class="outfits-grid">
+    {% for o in outfits %}
+    <div class="outfit-card">
+      {% if o.canvas_path %}
+      <img src="{{ url_for('static', filename='uploads/'+o.canvas_path) }}" alt="{{ o.name }}">
+      {% else %}
+      <div style="height:240px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:3rem">👗</div>
+      {% endif %}
+      <div class="oi">
+        <div class="on">{{ o.name }}</div>
+        <div class="od">{{ o.created_at.strftime('%b %d, %Y') }}</div>
+        {% if o.ai_generated %}<div class="ai-badge">✦ Couture Buddy</div>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card">
+    <div class="empty-state">
+      <div class="ei">✦</div>
+      <p class="display-sm" style="margin-bottom:.5rem">No outfits yet</p>
+      <p class="serif-italic" style="margin-bottom:1.5rem">Build your first look or let Couture Buddy style you</p>
+      <div style="display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap">
+        <a href="{{ url_for('builder') }}" class="btn btn-primary">Build Outfit</a>
+        <a href="{{ url_for('couture_buddy') }}" class="btn btn-secondary">Couture Buddy ✦</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if not clothes %}
+  <div class="card" style="margin-top:1.5rem">
+    <div class="empty-state">
+      <div class="ei">🗂️</div>
+      <p class="display-sm" style="margin-bottom:.5rem">Your wardrobe is empty</p>
+      <p class="serif-italic" style="margin-bottom:1.5rem">Start by uploading your clothes by category</p>
+      <a href="{{ url_for('wardrobe') }}" class="btn btn-primary">Upload Clothes →</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
